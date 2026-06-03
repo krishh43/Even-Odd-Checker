@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Even or Odd Checker</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    :root {
+      --bg: #0d0f14;
+      --card: #151821;
+      --border: #252a36;
+      --fg: #e8eaf0;
+      --muted: #6b7394;
+      --accent-even: #00e69d;
+      --accent-odd: #ff6b6b;
+      --glow-even: rgba(0, 230, 157, 0.15);
+      --glow-odd: rgba(255, 107, 107, 0.15);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Space Grotesk', sans-serif;
+      background: var(--bg);
+      color: var(--fg);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* Animated background grid */
+    .bg-grid {
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(var(--border) 1px, transparent 1px),
+        linear-gradient(90deg, var(--border) 1px, transparent 1px);
+      background-size: 60px 60px;
+      opacity: 0.3;
+      animation: gridShift 20s linear infinite;
+    }
+
+    @keyframes gridShift {
+      0% { transform: translate(0, 0); }
+      100% { transform: translate(60px, 60px); }
+    }
+
+    /* Floating orbs */
+    .orb {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(80px);
+      opacity: 0.4;
+      pointer-events: none;
+      transition: background 1.5s ease, opacity 1.5s ease;
+    }
+
+    .orb-1 {
+      width: 400px;
+      height: 400px;
+      top: -100px;
+      right: -100px;
+      background: var(--accent-even);
+      animation: float1 8s ease-in-out infinite;
+    }
+
+    .orb-2 {
+      width: 350px;
+      height: 350px;
+      bottom: -80px;
+      left: -80px;
+      background: var(--accent-odd);
+      animation: float2 10s ease-in-out infinite;
+    }
+
+    @keyframes float1 {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      50% { transform: translate(-40px, 40px) scale(1.1); }
+    }
+
+    @keyframes float2 {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      50% { transform: translate(30px, -30px) scale(0.9); }
+    }
+
+    /* Main card */
+    .card {
+      position: relative;
+      z-index: 2;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 48px 40px;
+      width: 90%;
+      max-width: 480px;
+      text-align: center;
+      backdrop-filter: blur(20px);
+      transition: border-color 0.6s ease, box-shadow 0.6s ease;
+    }
+
+    .card.even {
+      border-color: var(--accent-even);
+      box-shadow: 0 0 60px var(--glow-even), inset 0 0 30px var(--glow-even);
+    }
+
+    .card.odd {
+      border-color: var(--accent-odd);
+      box-shadow: 0 0 60px var(--glow-odd), inset 0 0 30px var(--glow-odd);
+    }
+
+    .icon-wrapper {
+      width: 72px;
+      height: 72px;
+      margin: 0 auto 24px;
+      border-radius: 20px;
+      background: linear-gradient(135deg, var(--accent-even), var(--accent-odd));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      color: var(--bg);
+      animation: iconPulse 3s ease-in-out infinite;
+    }
+
+    @keyframes iconPulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+
+    h1 {
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      letter-spacing: -0.5px;
+    }
+
+    .subtitle {
+      color: var(--muted);
+      font-size: 15px;
+      margin-bottom: 36px;
+    }
+
+    /* Input area */
+    .input-group {
+      position: relative;
+      margin-bottom: 24px;
+    }
+
+    .input-group input {
+      width: 100%;
+      padding: 18px 20px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 24px;
+      font-weight: 700;
+      text-align: center;
+      background: var(--bg);
+      border: 2px solid var(--border);
+      border-radius: 16px;
+      color: var(--fg);
+      outline: none;
+      transition: border-color 0.3s ease, box-shadow 0.3s ease;
+      caret-color: var(--accent-even);
+    }
+
+    .input-group input::placeholder {
+      color: var(--muted);
+      font-weight: 400;
+      font-size: 16px;
+    }
+
+    .input-group input:focus {
+      border-color: var(--accent-even);
+      box-shadow: 0 0 0 4px var(--glow-even);
+    }
+
+    /* Buttons */
+    .btn-row {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 32px;
+    }
+
+    .btn-check {
+      flex: 1;
+      padding: 16px 24px;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 16px;
+      font-weight: 700;
+      border: none;
+      border-radius: 14px;
+      cursor: pointer;
+      background: linear-gradient(135deg, var(--accent-even), #00c987);
+      color: var(--bg);
+      transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn-check:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px var(--glow-even);
+    }
+
+    .btn-check:active {
+      transform: translateY(0) scale(0.97);
+    }
+
+    .btn-clear {
+      padding: 16px 20px;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 16px;
+      font-weight: 700;
+      border: 2px solid var(--border);
+      border-radius: 14px;
+      cursor: pointer;
+      background: transparent;
+      color: var(--muted);
+      transition: border-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+    }
+
+    .btn-clear:hover {
+      border-color: var(--muted);
+      color: var(--fg);
+      transform: translateY(-2px);
+    }
+
+    .btn-clear:active {
+      transform: translateY(0) scale(0.97);
+    }
+
+    /* Result display */
+    .result {
+      min-height: 100px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transform: translateY(10px);
+      transition: opacity 0.4s ease, transform 0.4s ease;
+    }
+
+    .result.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .result-label {
+      font-size: 14px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin-bottom: 8px;
+    }
+
+    .result-value {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 36px;
+      font-weight: 700;
+      transition: color 0.4s ease;
+    }
+
+    .result-value.even-text {
+      color: var(--accent-even);
+    }
+
+    .result-value.odd-text {
+      color: var(--accent-odd);
+    }
+
+    .result-detail {
+      margin-top: 8px;
+      font-size: 14px;
+      color: var(--muted);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* Error message */
+    .error {
+      color: var(--accent-odd);
+      font-size: 14px;
+      min-height: 20px;
+      margin-bottom: 8px;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .error.visible {
+      opacity: 1;
+    }
+
+    /* History */
+    .history-section {
+      margin-top: 32px;
+      border-top: 1px solid var(--border);
+      padding-top: 24px;
+    }
+
+    .history-title {
+      font-size: 13px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin-bottom: 12px;
+    }
+
+    .history-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: center;
+    }
+
+    .history-chip {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      padding: 6px 14px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--bg);
+      color: var(--muted);
+      animation: chipIn 0.3s ease backwards;
+    }
+
+    .history-chip.even-chip {
+      border-color: rgba(0, 230, 157, 0.3);
+      color: var(--accent-even);
+      background: rgba(0, 230, 157, 0.06);
+    }
+
+    .history-chip.odd-chip {
+      border-color: rgba(255, 107, 107, 0.3);
+      color: var(--accent-odd);
+      background: rgba(255, 107, 107, 0.06);
+    }
+
+    @keyframes chipIn {
+      from { opacity: 0; transform: scale(0.8); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    /* Particles */
+    .particle-container {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .particle {
+      position: absolute;
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    /* Responsive */
+    @media (max-width: 520px) {
+      .card {
+        padding: 36px 24px;
+      }
+      h1 { font-size: 22px; }
+      .result-value { font-size: 28px; }
+      .input-group input { font-size: 20px; }
+    }
+
+    /* Reduced motion */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Background layers -->
+  <div class="bg-grid"></div>
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="particle-container" id="particles"></div>
+
+  <!-- Main card -->
+  <main class="card" id="card" role="main" aria-label="Even or Odd number checker">
+    <div class="icon-wrapper">
+      <i class="fa-solid fa-divide"></i>
+    </div>
+    <h1>Even or Odd Checker</h1>
+    <p class="subtitle">Enter any whole number to find out</p>
+
+    <div class="error" id="error" role="alert" aria-live="polite"></div>
+
+    <div class="input-group">
+      <input
+        type="text"
+        id="numberInput"
+        placeholder="Type a number..."
+        autocomplete="off"
+        aria-label="Enter a number"
+        inputmode="numeric"
+      >
+    </div>
+
+    <div class="btn-row">
+      <button class="btn-check" id="checkBtn" aria-label="Check number">
+        <i class="fa-solid fa-bolt"></i>&nbsp; Check
+      </button>
+      <button class="btn-clear" id="clearBtn" aria-label="Clear input and result">
+        <i class="fa-solid fa-rotate-left"></i>
+      </button>
+    </div>
+
+    <div class="result" id="result" aria-live="polite">
+      <span class="result-label">Result</span>
+      <span class="result-value" id="resultValue"></span>
+      <span class="result-detail" id="resultDetail"></span>
+    </div>
+
+    <section class="history-section" id="historySection" style="display:none;">
+      <div class="history-title">Recent Checks</div>
+      <div class="history-list" id="historyList"></div>
+    </section>
+  </main>
+
+  <script>
+    // DOM references
+    const card = document.getElementById('card');
+    const numberInput = document.getElementById('numberInput');
+    const checkBtn = document.getElementById('checkBtn');
+    const clearBtn = document.getElementById('clearBtn');
+    const errorEl = document.getElementById('error');
+    const resultEl = document.getElementById('result');
+    const resultValue = document.getElementById('resultValue');
+    const resultDetail = document.getElementById('resultDetail');
+    const historySection = document.getElementById('historySection');
+    const historyList = document.getElementById('historyList');
+    const particlesContainer = document.getElementById('particles');
+
+    // Track history
+    const history = [];
+    const MAX_HISTORY = 12;
+
+    // Show error message
+    function showError(msg) {
+      errorEl.textContent = msg;
+      errorEl.classList.add('visible');
+      resultEl.classList.remove('visible');
+    }
+
+    // Hide error message
+    function hideError() {
+      errorEl.classList.remove('visible');
+    }
+
+    // Check if the number is even or odd
+    function checkNumber() {
+      hideError();
+      const raw = numberInput.value.trim();
+
+      if (raw === '') {
+        showError('Please enter a number first.');
+        shakeInput();
+        return;
+      }
+
+      // Allow negative sign and digits only
+      if (!/^-?\d+$/.test(raw)) {
+        showError('Only whole numbers are allowed (no decimals or letters).');
+        shakeInput();
+        return;
+      }
+
+      const num = parseInt(raw, 10);
+
+      // Safety: reject numbers too large for JS
+      if (!Number.isSafeInteger(num)) {
+        showError('Number is too large. Try something smaller.');
+        shakeInput();
+        return;
+      }
+
+      const isEven = num % 2 === 0;
+
+      // Update result display
+      resultValue.textContent = isEven ? 'EVEN' : 'ODD';
+      resultValue.className = 'result-value ' + (isEven ? 'even-text' : 'odd-text');
+      resultDetail.textContent = `${num} ÷ 2 = ${Math.floor(num / 2)} remainder ${Math.abs(num % 2)}`;
+
+      // Update card glow
+      card.classList.remove('even', 'odd');
+      card.classList.add(isEven ? 'even' : 'odd');
+
+      // Show result with animation
+      resultEl.classList.remove('visible');
+      // Force reflow for re-triggering transition
+      void resultEl.offsetWidth;
+      resultEl.classList.add('visible');
+
+      // Burst particles
+      burstParticles(isEven);
+
+      // Add to history
+      addToHistory(num, isEven);
+    }
+
+    // Shake the input on error
+    function shakeInput() {
+      numberInput.style.animation = 'none';
+      void numberInput.offsetWidth;
+      numberInput.style.animation = 'shake 0.4s ease';
+    }
+
+    // Add shake keyframes dynamically
+    const shakeStyle = document.createElement('style');
+    shakeStyle.textContent = `
+      @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        20% { transform: translateX(-8px); }
+        40% { transform: translateX(8px); }
+        60% { transform: translateX(-5px); }
+        80% { transform: translateX(5px); }
+      }
+    `;
+    document.head.appendChild(shakeStyle);
+
+    // Clear everything
+    function clearAll() {
+      hideError();
+      numberInput.value = '';
+      resultEl.classList.remove('visible');
+      card.classList.remove('even', 'odd');
+      numberInput.focus();
+    }
+
+    // Add entry to history chips
+    function addToHistory(num, isEven) {
+      // Avoid duplicates at the top
+      if (history.length > 0 && history[0].num === num) return;
+
+      history.unshift({ num, isEven });
+      if (history.length > MAX_HISTORY) history.pop();
+
+      renderHistory();
+    }
+
+    // Render history chips
+    function renderHistory() {
+      if (history.length === 0) {
+        historySection.style.display = 'none';
+        return;
+      }
+
+      historySection.style.display = 'block';
+      historyList.innerHTML = '';
+
+      history.forEach((entry, i) => {
+        const chip = document.createElement('span');
+        chip.className = 'history-chip ' + (entry.isEven ? 'even-chip' : 'odd-chip');
+        chip.textContent = `${entry.num} → ${entry.isEven ? 'Even' : 'Odd'}`;
+        chip.style.animationDelay = `${i * 0.05}s`;
+        chip.style.cursor = 'pointer';
+        chip.setAttribute('role', 'button');
+        chip.setAttribute('tabindex', '0');
+        chip.setAttribute('aria-label', `${entry.num} is ${entry.isEven ? 'even' : 'odd'}. Click to check again.`);
+
+        // Clicking a history chip re-checks that number
+        chip.addEventListener('click', () => {
+          numberInput.value = entry.num;
+          checkNumber();
+        });
+        chip.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            numberInput.value = entry.num;
+            checkNumber();
+          }
+        });
+
+        historyList.appendChild(chip);
+      });
+    }
+
+    // Particle burst effect
+    function burstParticles(isEven) {
+      const color = isEven ? '#00e69d' : '#ff6b6b';
+      const rect = card.getBoundingClientRect();
+      const cx = rect.left + rect.width / 2;
+      const cy = rect.top + rect.height / 2;
+      const count = 24;
+
+      for (let i = 0; i < count; i++) {
+        const p = document.createElement('div');
+        p.className = 'particle';
+        p.style.left = cx + 'px';
+        p.style.top = cy + 'px';
+        p.style.background = color;
+        p.style.boxShadow = `0 0 6px ${color}`;
+        particlesContainer.appendChild(p);
+
+        const angle = (Math.PI * 2 / count) * i + (Math.random() - 0.5) * 0.5;
+        const distance = 80 + Math.random() * 120;
+        const dx = Math.cos(angle) * distance;
+        const dy = Math.sin(angle) * distance;
+        const duration = 600 + Math.random() * 400;
+        const size = 3 + Math.random() * 4;
+
+        p.style.width = size + 'px';
+        p.style.height = size + 'px';
+
+        const anim = p.animate([
+          { opacity: 1, transform: 'translate(0, 0) scale(1)' },
+          { opacity: 0, transform: `translate(${dx}px, ${dy}px) scale(0.2)` }
+        ], {
+          duration: duration,
+          easing: 'cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+          fill: 'forwards'
+        });
+
+        anim.onfinish = () => p.remove();
+      }
+    }
+
+    // Event listeners
+    checkBtn.addEventListener('click', checkNumber);
+    clearBtn.addEventListener('click', clearAll);
+
+    numberInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        checkNumber();
+      }
+    });
+
+    // Only allow digits, minus sign at the start
+    numberInput.addEventListener('input', () => {
+      const val = numberInput.value;
+      // Strip anything that isn't a digit or leading minus
+      const cleaned = val.replace(/[^0-9-]/g, '').replace(/(?!^)-/g, '');
+      if (cleaned !== val) numberInput.value = cleaned;
+      hideError();
+    });
+
+    // Focus the input on page load
+    numberInput.focus();
+  </script>
+</body>
+</html>
